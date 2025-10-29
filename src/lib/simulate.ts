@@ -54,7 +54,8 @@ export function simulate({
       // Charger is free
       if (chargers[i] === 0) {
         // Simulate whether an EV arrives
-        const evArrivalChance = ARRIVAL_PROBABILITIES[hourAtTick(tick)];
+        const evArrivalChance =
+          ARRIVAL_PROBABILITIES[hourAtTick(tick)] / TICKS_PER_HOUR;
         const scaledArrivalChance = evArrivalChance * arrivalProbabilityScale;
         const evActuallyArrives = randomPercent() < scaledArrivalChance;
 

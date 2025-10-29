@@ -1,4 +1,4 @@
-import { simulate } from "@/utils/simulate";
+import { simulate } from "@/lib/simulate";
 import type { kW, kWhPer100km } from "@/types";
 import FormatNumber from "@/components/format-number";
 import {
