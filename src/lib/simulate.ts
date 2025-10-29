@@ -5,7 +5,7 @@ import {
   SIMULATION_PERIOD,
   TICKS_PER_HOUR,
 } from "@/config";
-import type { km, kW, kWh, SimulationConfig, SimulationResult } from "@/types";
+import type { SimulationConfig, SimulationResult } from "@/types";
 import seedrandom from "seedrandom";
 
 const random = RANDOM_SEED ? seedrandom(RANDOM_SEED) : Math.random;
@@ -33,7 +33,7 @@ function randomChargingDemand() {
     }
   }
 
-  return 0 as km; // In case the toal probabilities don't sum to 100
+  return 0; // In case the toal probabilities don't sum to 100
 }
 
 export function simulate({
@@ -42,12 +42,12 @@ export function simulate({
   evConsumption,
   arrivalProbabilityScale = 1,
 }: SimulationConfig): SimulationResult {
-  const theoreticalMaxPowerDemand = (chargepoints * chargingPower) as kW;
+  const theoreticalMaxPowerDemand = chargepoints * chargingPower;
 
   // Simulate each charger with a simple number, indicating how many ticks are left until it is free
   const chargers = new Array(chargepoints).fill(0);
-  let totalEnergyConsumed = 0 as kWh;
-  let actualMaxPowerDemand = 0 as kW;
+  let totalEnergyConsumed = 0;
+  let actualMaxPowerDemand = 0;
 
   // Simulate tick by tick
   const totalTicks = SIMULATION_PERIOD * TICKS_PER_HOUR;
@@ -68,8 +68,8 @@ export function simulate({
 
         if (evActuallyArrives) {
           // Calculate how long the EV will use the charger
-          const demand = randomChargingDemand() as km;
-          const energy = ((demand * evConsumption) / 100) as kWh;
+          const demand = randomChargingDemand();
+          const energy = (demand * evConsumption) / 100;
           const hoursNeeded = energy / chargingPower;
           const ticksNeeded = Math.ceil(hoursNeeded * TICKS_PER_HOUR);
 
@@ -81,8 +81,8 @@ export function simulate({
       if (chargers[i] > 0) {
         busyChargers++;
         // Consume energy and count down
-        totalEnergyConsumed = (totalEnergyConsumed +
-          chargingPower / TICKS_PER_HOUR) as kWh;
+        totalEnergyConsumed =
+          totalEnergyConsumed + chargingPower / TICKS_PER_HOUR;
         chargers[i]--;
       }
     }
@@ -90,7 +90,7 @@ export function simulate({
     actualMaxPowerDemand = Math.max(
       actualMaxPowerDemand,
       busyChargers * chargingPower
-    ) as kW;
+    );
   }
 
   return {
