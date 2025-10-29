@@ -1,10 +1,14 @@
 import {
   ARRIVAL_PROBABILITIES,
   CHARGING_DEMAND_PROBABILITIES,
+  RANDOM_SEED,
   SIMULATION_PERIOD,
   TICKS_PER_HOUR,
 } from "@/config";
 import type { km, kW, kWh, SimulationConfig, SimulationResult } from "@/types";
+import seedrandom from "seedrandom";
+
+const random = RANDOM_SEED ? seedrandom(RANDOM_SEED) : Math.random;
 
 function hourAtTick(tick: number) {
   // Every `TICKS_PER_HOUR` ticks, the hour increases by 1
@@ -15,11 +19,11 @@ function hourAtTick(tick: number) {
 }
 
 function randomPercent() {
-  return Math.random() * 100;
+  return random() * 100;
 }
 
 function randomChargingDemand() {
-  const rand = Math.random() * 100;
+  const rand = random() * 100;
   let cumulativeProbability = 0;
 
   for (const [probability, demand] of CHARGING_DEMAND_PROBABILITIES) {
@@ -54,10 +58,13 @@ export function simulate({
       // Charger is free
       if (chargers[i] === 0) {
         // Simulate whether an EV arrives
-        const evArrivalChance =
-          ARRIVAL_PROBABILITIES[hourAtTick(tick)] / TICKS_PER_HOUR;
-        const scaledArrivalChance = evArrivalChance * arrivalProbabilityScale;
-        const evActuallyArrives = randomPercent() < scaledArrivalChance;
+        const evArrivalChanceInPerHour =
+          ARRIVAL_PROBABILITIES[hourAtTick(tick)] * arrivalProbabilityScale;
+        const evArrivalChancePerTick =
+          (1 -
+            Math.pow(1 - evArrivalChanceInPerHour / 100, 1 / TICKS_PER_HOUR)) *
+          100;
+        const evActuallyArrives = randomPercent() < evArrivalChancePerTick;
 
         if (evActuallyArrives) {
           // Calculate how long the EV will use the charger

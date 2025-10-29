@@ -35,3 +35,5 @@ export const CHARGING_DEMAND_PROBABILITIES = [
 export const SIMULATION_PERIOD = 365 * 24; // 1 year
 
 export const TICKS_PER_HOUR = 4; // 15-minute intervals
+
+export const RANDOM_SEED = "12345";
