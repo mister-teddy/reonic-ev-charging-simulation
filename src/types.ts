@@ -29,6 +29,11 @@ export const SimulationConfig = type({
    * The simulation period in days.
    */
   period: "1<=number<=365?",
+
+  /**
+   * Enable seed random for deterministic results.
+   */
+  useSeedRandom: "boolean?",
 });
 
 export type SimulationConfig = typeof SimulationConfig.infer;

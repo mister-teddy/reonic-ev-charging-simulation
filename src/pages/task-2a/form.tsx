@@ -23,6 +23,8 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import FormatNumber from "@/components/format-number";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function Form() {
   const form = useFormContext<SimulationFormData>();
@@ -159,6 +161,29 @@ export default function Form() {
                   required
                   disabled={isSubmitting}
                 />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+          <Controller
+            control={form.control}
+            name="useSeedRandom"
+            render={({ field, fieldState }) => (
+              <Field>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id={field.name}
+                    name={field.name}
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  <Label htmlFor={field.name}>
+                    Use Seed Random (deterministic results)
+                  </Label>
+                </div>
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}

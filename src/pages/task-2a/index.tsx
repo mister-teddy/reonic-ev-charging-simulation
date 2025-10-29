@@ -16,28 +16,39 @@ export default function Task2a() {
       arrivalProbabilityScale: 1,
       evConsumption: 18,
       chargingPower: 11,
+      useSeedRandom: false,
     },
   });
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const instanceResultControllerRef = useRef<AbortController>(undefined);
 
   return (
     <FormProvider {...form}>
       <form
         onSubmit={form.handleSubmit(async (data) => {
-          if (abortControllerRef.current) {
-            return abortControllerRef.current.abort();
+          // User requested Instant Result
+          if (instanceResultControllerRef.current) {
+            return instanceResultControllerRef.current.abort();
           }
-          const abortController = new AbortController();
-          abortControllerRef.current = abortController;
+
+          const controller = new AbortController();
+          instanceResultControllerRef.current = controller;
+
+          // Clear previous result
           form.setValue("result", undefined);
+
+          // Start simulation
           const result = await simulate({
             ...data,
-            signal: abortController.signal,
-            callback: (progress) => form.setValue("progress", progress),
+            signal: controller.signal,
+            callback: (progress) => form.setValue("progress", progress), // Update on-going progress
           });
+
+          // Simulation completed
           toast.success("Simulation completed!");
           form.setValue("result", result);
-          abortControllerRef.current = null;
+
+          // Clear progress data
+          instanceResultControllerRef.current = undefined;
           form.setValue("progress", undefined);
         })}
       >

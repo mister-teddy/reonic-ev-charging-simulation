@@ -29,4 +29,4 @@ export const CHARGING_DEMAND_PROBABILITIES = [
 
 export const TICKS_PER_HOUR = 4; // 15-minute intervals
 
-export const RANDOM_SEED = undefined;
+export const RANDOM_SEED = "Reonic";

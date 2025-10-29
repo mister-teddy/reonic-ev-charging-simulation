@@ -11,8 +11,6 @@ import type {
 } from "@/types";
 import seedrandom from "seedrandom";
 
-const random = RANDOM_SEED ? seedrandom(RANDOM_SEED) : Math.random;
-
 export function timeAtTick(tick: number): [hour: number, minute: number] {
   // Every `TICKS_PER_HOUR` ticks, the hour increases by 1
   const hoursPassed = Math.floor(tick / TICKS_PER_HOUR) % 24;
@@ -25,36 +23,38 @@ export function timeAtTick(tick: number): [hour: number, minute: number] {
   return [hoursPassed, minutesPassed];
 }
 
-function randomPercent() {
-  return random() * 100;
-}
-
-function randomChargingDemand() {
-  const rand = random() * 100;
-  let cumulativeProbability = 0;
-
-  for (const [probability, demand] of CHARGING_DEMAND_PROBABILITIES) {
-    cumulativeProbability += probability;
-    if (rand < cumulativeProbability) {
-      return demand;
-    }
-  }
-
-  return 0; // In case the toal probabilities don't sum to 100
-}
-
 export async function simulate({
   chargepoints,
   chargingPower,
   evConsumption,
   arrivalProbabilityScale = 1,
   period = 365,
+  useSeedRandom,
   ...options
 }: SimulationConfig & {
   callback?: (progress: SimulationProgress) => void;
   signal?: AbortSignal;
 }): Promise<SimulationResult> {
   const theoreticalMaxPowerDemand = chargepoints * chargingPower;
+
+  // Setup random number generator
+  const random = useSeedRandom ? seedrandom(RANDOM_SEED) : Math.random;
+
+  const randomPercent = () => random() * 100;
+
+  const randomChargingDemand = () => {
+    const rand = random() * 100;
+    let cumulativeProbability = 0;
+
+    for (const [probability, demand] of CHARGING_DEMAND_PROBABILITIES) {
+      cumulativeProbability += probability;
+      if (rand < cumulativeProbability) {
+        return demand;
+      }
+    }
+
+    return 0; // In case the toal probabilities don't sum to 100
+  };
 
   // Simulate each charger with a simple number, indicating how many ticks are left until it is free
   const chargers = new Array<number>(chargepoints).fill(0);

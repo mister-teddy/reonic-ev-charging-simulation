@@ -65,7 +65,15 @@ export default function Result() {
             <div className="text-xs opacity-80">{label}</div>
             <div className="flex items-end space-x-2">
               <div className="font-bold text-xl">
-                {value ? <FormatNumber value={value} /> : "—"}
+                {value ? (
+                  <FormatNumber
+                    value={value}
+                    maximumFractionDigits={0}
+                    fixedWidth
+                  />
+                ) : (
+                  "—"
+                )}
               </div>
               <span className="text-xs opacity-80 mb-1">{unit}</span>
             </div>
