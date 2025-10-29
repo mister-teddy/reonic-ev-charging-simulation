@@ -9,12 +9,12 @@ export const SimulationConfig = type({
   /**
    * The charging power per chargepoint.
    */
-  chargingPower: "number.safe>0",
+  chargingPower: type("string.numeric.parse|number", "|>", "number>0"),
 
   /**
    * The consumption of the cars per 100 km.
    */
-  evConsumption: "number.safe>0",
+  evConsumption: type("string.numeric.parse|number", "|>", "number>0"),
 
   /**
    * A multiplier for the arrival probability to increase the amount of cars arriving to charge.
@@ -23,12 +23,12 @@ export const SimulationConfig = type({
    * - A value of 0.2 means the amount of cars arriving to charge will only be 20% of the original arrival probability.
    * - A value of 2 means the amount of cars arriving to charge will be double the original arrival probability.
    */
-  "arrivalProbabilityScale?": "20<=number<=200",
+  arrivalProbabilityScale: "0.2<=number<=2?",
 
   /**
    * The simulation period in days.
    */
-  "period?": "1<=number<=365",
+  period: "1<=number<=365?",
 });
 
 export type SimulationConfig = typeof SimulationConfig.infer;

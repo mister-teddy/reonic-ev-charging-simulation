@@ -22,6 +22,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import FormatNumber from "@/components/format-number";
 
 export default function Form() {
   const form = useFormContext<SimulationFormData>();
@@ -35,7 +36,7 @@ export default function Form() {
           <Summary />
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="mb-6">
         <FieldGroup>
           <Controller
             control={form.control}
@@ -99,6 +100,8 @@ export default function Form() {
                   max={200}
                   step={1}
                   disabled={isSubmitting}
+                  value={(field.value ?? 1) * 100}
+                  onChange={(v) => field.onChange(v / 100)}
                 />
                 <FieldDescription>
                   A multiplier for the arrival probability to increase the
@@ -122,8 +125,11 @@ export default function Form() {
                   {...field}
                   id={field.name}
                   type="number"
+                  inputMode="numeric"
                   aria-invalid={fieldState.invalid}
-                  step={0.1}
+                  min={0}
+                  max={Number.MAX_SAFE_INTEGER}
+                  step={0.01}
                   required
                   disabled={isSubmitting}
                 />
@@ -145,8 +151,11 @@ export default function Form() {
                   {...field}
                   id={field.name}
                   type="number"
+                  inputMode="numeric"
                   aria-invalid={fieldState.invalid}
-                  step={0.1}
+                  min={0}
+                  max={Number.MAX_SAFE_INTEGER}
+                  step={0.01}
                   required
                   disabled={isSubmitting}
                 />
@@ -187,9 +196,9 @@ function Summary() {
 
   return (
     <>
-      Simulate {chargepoints} chargepoints with {chargingPower}kW power for{" "}
-      {period} days in 15-minute intervals ({((period ?? 0) * 24 * 60) / 15}{" "}
-      ticks).
+      Simulate {chargepoints} chargepoints with{" "}
+      <FormatNumber value={chargingPower} unit="kW" /> power for {period} days
+      in 15-minute intervals ({((period ?? 0) * 24 * 60) / 15} ticks).
     </>
   );
 }
