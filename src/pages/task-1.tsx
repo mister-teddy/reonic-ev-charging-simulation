@@ -1,5 +1,4 @@
 import { simulate } from "@/lib/simulate";
-import type { kW, kWhPer100km } from "@/types";
 import FormatNumber from "@/components/format-number";
 import {
   Card,
@@ -16,6 +15,7 @@ import {
   TableCell,
   Table,
 } from "@/components/ui/table";
+import { use } from "react";
 
 export default function Task1() {
   const {
@@ -23,11 +23,13 @@ export default function Task1() {
     actualMaxPowerDemand,
     concurrencyFactor,
     totalEnergyConsumed,
-  } = simulate({
-    chargepoints: 20,
-    chargingPower: 11 as kW,
-    evConsumption: 18 as kWhPer100km,
-  });
+  } = use(
+    simulate({
+      chargepoints: 20,
+      chargingPower: 11,
+      evConsumption: 18,
+    })
+  );
 
   return (
     <div className="h-screen flex justify-center items-center">

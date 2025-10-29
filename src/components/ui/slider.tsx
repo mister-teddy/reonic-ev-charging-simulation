@@ -85,7 +85,11 @@ const Slider = React.forwardRef<
           <Input
             type="number"
             value={displayValue}
-            onChange={handleInputChange}
+            onChange={(e) => {
+              if (Number.isInteger(Number(e.currentTarget.value))) {
+                handleInputChange(e);
+              }
+            }}
             min={min}
             max={max}
             className="w-20 text-right tabular-nums"

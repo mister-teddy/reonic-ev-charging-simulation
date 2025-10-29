@@ -12,7 +12,7 @@ export default function Task2a() {
     resolver: arktypeResolver(SimulationConfig),
     defaultValues: {
       period: 30,
-      chargepoints: 20,
+      chargepoints: 32,
       arrivalProbabilityScale: 1,
       evConsumption: 18,
       chargingPower: 11,

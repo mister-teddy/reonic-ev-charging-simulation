@@ -1,5 +1,3 @@
-import type { km } from "./types";
-
 /**
  * The `i`th element corresponds to the probability of a car arriving to charge between hour `i` and hour `i+1`.
  *
@@ -18,17 +16,17 @@ export const ARRIVAL_PROBABILITIES = [
  * 34.31% of cars arriving to charge have a charging demand of 0 km (doesn't charge).
  */
 export const CHARGING_DEMAND_PROBABILITIES = [
-  [34.31, 0 as km],
-  [4.9, 5 as km],
-  [9.8, 10 as km],
-  [11.76, 20 as km],
-  [8.82, 30 as km],
-  [11.76, 50 as km],
-  [10.78, 100 as km],
-  [4.9, 200 as km],
-  [2.94, 300 as km],
-] satisfies [number, km][];
+  [34.31, 0],
+  [4.9, 5],
+  [9.8, 10],
+  [11.76, 20],
+  [8.82, 30],
+  [11.76, 50],
+  [10.78, 100],
+  [4.9, 200],
+  [2.94, 300],
+];
 
 export const TICKS_PER_HOUR = 4; // 15-minute intervals
 
-export const RANDOM_SEED = "12345";
+export const RANDOM_SEED = undefined;

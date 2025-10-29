@@ -57,7 +57,7 @@ export async function simulate({
   const theoreticalMaxPowerDemand = chargepoints * chargingPower;
 
   // Simulate each charger with a simple number, indicating how many ticks are left until it is free
-  const chargers = new Array(chargepoints).fill(0);
+  const chargers = new Array<number>(chargepoints).fill(0);
   let totalEnergyConsumed = 0;
   let actualMaxPowerDemand = 0;
 
@@ -66,20 +66,21 @@ export async function simulate({
   for (let tick = 0; tick < totalTicks; tick++) {
     let busyChargers = 0;
 
-    for (const i in chargers) {
-      // Charger is free
-      if (chargers[i] === 0) {
-        // Simulate whether an EV arrives
-        const [hour] = timeAtTick(tick);
-        const evArrivalChanceInPerHour =
-          ARRIVAL_PROBABILITIES[hour] * arrivalProbabilityScale;
-        const evArrivalChancePerTick =
-          (1 -
-            Math.pow(1 - evArrivalChanceInPerHour / 100, 1 / TICKS_PER_HOUR)) *
-          100;
-        const evActuallyArrives = randomPercent() < evArrivalChancePerTick;
+    // Calculate EV arrival chance at this tick
+    const [hour] = timeAtTick(tick);
+    const evArrivalChanceInPerHour =
+      ARRIVAL_PROBABILITIES[hour] * arrivalProbabilityScale;
+    const evArrivalChancePerTick =
+      (1 - Math.pow(1 - evArrivalChanceInPerHour / 100, 1 / TICKS_PER_HOUR)) *
+      100;
 
-        if (evActuallyArrives) {
+    for (const i in chargers) {
+      // Simulate whether an EV arrives
+      const evArrived = randomPercent() < evArrivalChancePerTick;
+      if (evArrived) {
+        const chargingIndex =
+          chargers[i] === 0 ? Number(i) : chargers.findIndex((c) => c === 0); // If this charger is busy, we find something else
+        if (chargingIndex > -1) {
           // Calculate how long the EV will use the charger
           const demand = randomChargingDemand();
           const energy = (demand * evConsumption) / 100;
@@ -87,10 +88,12 @@ export async function simulate({
           const ticksNeeded = Math.ceil(hoursNeeded * TICKS_PER_HOUR);
 
           // Make the charger busy
-          chargers[i] = ticksNeeded;
+          chargers[chargingIndex] = ticksNeeded;
         }
       }
+    }
 
+    for (const i in chargers) {
       if (chargers[i] > 0) {
         busyChargers++;
         // Consume energy and count down

@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 
@@ -8,7 +8,13 @@ import { Toaster } from "./components/ui/sonner";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {new URLSearchParams(location.search).has("logic") ? <Task1 /> : <Task2a />}
+    {new URLSearchParams(location.search).has("logic") ? (
+      <Suspense>
+        <Task1 />
+      </Suspense>
+    ) : (
+      <Task2a />
+    )}
     <Toaster />
   </StrictMode>
 );
