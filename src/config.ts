@@ -29,11 +29,6 @@ export const CHARGING_DEMAND_PROBABILITIES = [
   [2.94, 300 as km],
 ] satisfies [number, km][];
 
-/**
- * @unit hours
- */
-export const SIMULATION_PERIOD = 365 * 24; // 1 year
-
 export const TICKS_PER_HOUR = 4; // 15-minute intervals
 
 export const RANDOM_SEED = "12345";

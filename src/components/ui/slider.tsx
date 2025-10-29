@@ -89,6 +89,7 @@ const Slider = React.forwardRef<
             min={min}
             max={max}
             className="w-20 text-right tabular-nums"
+            disabled={props.disabled}
           />
         )}
       </div>

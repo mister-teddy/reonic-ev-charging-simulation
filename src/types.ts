@@ -9,12 +9,12 @@ export const SimulationConfig = type({
   /**
    * The charging power per chargepoint.
    */
-  chargingPower: "number>0",
+  chargingPower: "number.safe>0",
 
   /**
    * The consumption of the cars per 100 km.
    */
-  evConsumption: "number>0",
+  evConsumption: "number.safe>0",
 
   /**
    * A multiplier for the arrival probability to increase the amount of cars arriving to charge.
@@ -24,6 +24,11 @@ export const SimulationConfig = type({
    * - A value of 2 means the amount of cars arriving to charge will be double the original arrival probability.
    */
   "arrivalProbabilityScale?": "20<=number<=200",
+
+  /**
+   * The simulation period in days.
+   */
+  "period?": "1<=number<=365",
 });
 
 export type SimulationConfig = typeof SimulationConfig.infer;
@@ -49,3 +54,16 @@ export interface SimulationResult {
    */
   concurrencyFactor: number;
 }
+
+export interface SimulationProgress {
+  tick: number;
+  totalTicks: number;
+  chargers: number[];
+  totalEnergyConsumed: number;
+  actualMaxPowerDemand: number;
+}
+
+export type SimulationFormData = SimulationConfig & {
+  progress?: SimulationProgress;
+  result?: SimulationResult;
+};
