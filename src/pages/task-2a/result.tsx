@@ -33,7 +33,8 @@ export default function Result() {
     [
       <BatteryCharging color="white" size={16} />,
       "Total Energy Consumed",
-      result?.totalEnergyConsumed ?? progress?.totalEnergyConsumed,
+      result?.totalEnergyConsumed ??
+        (progress ? Math.round(progress.totalEnergyConsumed) : undefined),
       "kWh",
       result ? "result" : progress ? "progress" : "n/a",
     ],
@@ -65,15 +66,7 @@ export default function Result() {
             <div className="text-xs opacity-80">{label}</div>
             <div className="flex items-end space-x-2">
               <div className="font-bold text-xl">
-                {value ? (
-                  <FormatNumber
-                    value={value}
-                    maximumFractionDigits={0}
-                    fixedWidth
-                  />
-                ) : (
-                  "—"
-                )}
+                {value ? <FormatNumber value={value} fixedWidth /> : "—"}
               </div>
               <span className="text-xs opacity-80 mb-1">{unit}</span>
             </div>

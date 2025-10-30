@@ -14,19 +14,21 @@ export default function FormatNumber({
   maximumFractionDigits,
   fixedWidth,
 }: FormatNumberProps) {
-  const formattedValue = value.toLocaleString(undefined, {
+  const formattedValue = Number(value).toLocaleString(undefined, {
     maximumFractionDigits: maximumFractionDigits ?? 2,
   });
 
   return (
-    <span
-      style={
-        fixedWidth
-          ? { width: ` ${formattedValue.length}ch`, display: "inline-block" }
-          : undefined
-      }
-    >
-      {formattedValue}
+    <span>
+      <span
+        style={
+          fixedWidth
+            ? { width: ` ${formattedValue.length}ch`, display: "inline-block" }
+            : undefined
+        }
+      >
+        {formattedValue}
+      </span>
       {unit ? ` ${unit}` : ""}
     </span>
   );

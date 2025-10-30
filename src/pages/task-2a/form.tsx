@@ -226,7 +226,12 @@ function Summary() {
     <>
       Simulate {chargepointCount} chargepoints with{" "}
       <FormatNumber value={chargingPower} unit="kW" /> power for {periodDay}{" "}
-      days in 15-minute intervals ({((periodDay ?? 0) * 24 * 60) / 15} ticks).
+      days in 15-minute intervals (
+      <FormatNumber
+        value={((periodDay ?? 0) * 24 * 60) / 15}
+        maximumFractionDigits={0}
+      />{" "}
+      ticks).
     </>
   );
 }
