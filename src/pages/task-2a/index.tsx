@@ -1,18 +1,18 @@
 import { useRef } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { arktypeResolver } from "@hookform/resolvers/arktype";
-import { SimulationConfig, type SimulationFormData } from "@/types";
+import { SimulationParameters, type SimulationFormData } from "@/types";
 import { simulate } from "@/lib/simulate";
 import { toast } from "sonner";
 import Layout from "./layout";
-import ParkingLot from "./parking-lot";
 
 export default function Task2a() {
+  // The data in this form is used throughout the app, via useFormContext
   const form = useForm<SimulationFormData>({
-    resolver: arktypeResolver(SimulationConfig),
+    resolver: arktypeResolver(SimulationParameters),
     defaultValues: {
-      period: 30,
-      chargepoints: 32,
+      periodDay: 30,
+      chargepointCount: 32,
       arrivalProbabilityScale: 1,
       evConsumption: 18,
       chargingPower: 11,
@@ -52,9 +52,7 @@ export default function Task2a() {
           form.setValue("progress", undefined);
         })}
       >
-        <Layout>
-          <ParkingLot />
-        </Layout>
+        <Layout />
       </form>
     </FormProvider>
   );

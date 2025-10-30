@@ -5,50 +5,38 @@ import {
   TICKS_PER_HOUR,
 } from "@/config";
 import type {
-  SimulationConfig,
-  SimulationProgress,
+  SimulationOptions,
+  SimulationParameters,
   SimulationResult,
 } from "@/types";
 import seedrandom from "seedrandom";
+import { hourProbabilityToTickProbability, timeAtTick } from "./utils";
 
-export function timeAtTick(tick: number): [hour: number, minute: number] {
-  // Every `TICKS_PER_HOUR` ticks, the hour increases by 1
-  const hoursPassed = Math.floor(tick / TICKS_PER_HOUR) % 24;
-
-  const minutesPassed = Math.floor(
-    ((tick % TICKS_PER_HOUR) / TICKS_PER_HOUR) * 60
-  );
-
-  // Hour 25 -> Hour 1 next day
-  return [hoursPassed, minutesPassed];
-}
-
+/**
+ * Simulate EV charging behavior with a set of parameters, combined with probability distributions in the config file.
+ */
 export async function simulate({
-  chargepoints,
+  chargepointCount,
   chargingPower,
   evConsumption,
   arrivalProbabilityScale = 1,
-  period = 365,
-  useSeedRandom,
+  periodDay = 365,
+  useSeedRandom = false,
   ...options
-}: SimulationConfig & {
-  callback?: (progress: SimulationProgress) => void;
-  signal?: AbortSignal;
-}): Promise<SimulationResult> {
-  const theoreticalMaxPowerDemand = chargepoints * chargingPower;
+}: SimulationParameters & SimulationOptions): Promise<SimulationResult> {
+  const theoreticalMaxPowerDemand = chargepointCount * chargingPower;
 
-  // Setup random number generator
+  // Setup optional seeded random
   const random = useSeedRandom ? seedrandom(RANDOM_SEED) : Math.random;
 
-  const randomPercent = () => random() * 100;
-
+  // This function returns a random km based on the `T1: Charging demand probabilities` table
   const randomChargingDemand = () => {
-    const rand = random() * 100;
-    let cumulativeProbability = 0;
+    const chance = random();
 
+    let cumulativeProbability = 0;
     for (const [probability, demand] of CHARGING_DEMAND_PROBABILITIES) {
       cumulativeProbability += probability;
-      if (rand < cumulativeProbability) {
+      if (chance < cumulativeProbability) {
         return demand;
       }
     }
@@ -57,45 +45,52 @@ export async function simulate({
   };
 
   // Simulate each charger with a simple number, indicating how many ticks are left until it is free
-  const chargers = new Array<number>(chargepoints).fill(0);
+  const chargers = new Array<number>(chargepointCount).fill(0);
+
   let totalEnergyConsumed = 0;
   let actualMaxPowerDemand = 0;
 
-  // Simulate tick by tick
-  const totalTicks = period * 24 * TICKS_PER_HOUR;
+  // Simulate each tick
+  const totalTicks = periodDay * 24 * TICKS_PER_HOUR;
   for (let tick = 0; tick < totalTicks; tick++) {
-    let busyChargers = 0;
+    let busyChargers = 0; // We'll need this for `actualMaxPowerDemand` calculation later
 
     // Calculate EV arrival chance at this tick
     const [hour] = timeAtTick(tick);
-    const evArrivalChanceInPerHour =
+    const scaledArrivalProbability =
       ARRIVAL_PROBABILITIES[hour] * arrivalProbabilityScale;
-    const evArrivalChancePerTick =
-      (1 - Math.pow(1 - evArrivalChanceInPerHour / 100, 1 / TICKS_PER_HOUR)) *
-      100;
+    const arrivalProbabilityPerTick = hourProbabilityToTickProbability(
+      scaledArrivalProbability
+    );
 
     for (const i in chargers) {
       // Simulate whether an EV arrives
-      const evArrived = randomPercent() < evArrivalChancePerTick;
+      const evArrived = random() < arrivalProbabilityPerTick;
       if (evArrived) {
-        const chargingIndex =
-          chargers[i] === 0 ? Number(i) : chargers.findIndex((c) => c === 0); // If this charger is busy, we find something else
-        if (chargingIndex > -1) {
+        const chargerIndex =
+          chargers[i] === 0 // If an EV arrives at a free charger, it uses that one
+            ? Number(i)
+            : chargers.findIndex((c) => c === 0); // Otherwise, it finds another free charger. This is important!
+
+        // If there is a free charger
+        if (chargerIndex > -1) {
           // Calculate how long the EV will use the charger
-          const demand = randomChargingDemand();
-          const energy = (demand * evConsumption) / 100;
+          const demand = randomChargingDemand(); // in km
+          const energy = (demand * evConsumption) / 100; // in kWh
           const hoursNeeded = energy / chargingPower;
           const ticksNeeded = Math.ceil(hoursNeeded * TICKS_PER_HOUR);
 
           // Make the charger busy
-          chargers[chargingIndex] = ticksNeeded;
+          chargers[chargerIndex] = ticksNeeded;
         }
       }
     }
 
     for (const i in chargers) {
       if (chargers[i] > 0) {
+        // We'll need this for `actualMaxPowerDemand` calculation later
         busyChargers++;
+
         // Consume energy and count down
         totalEnergyConsumed =
           totalEnergyConsumed + chargingPower / TICKS_PER_HOUR;
@@ -103,12 +98,15 @@ export async function simulate({
       }
     }
 
-    actualMaxPowerDemand = Math.max(
-      actualMaxPowerDemand,
-      busyChargers * chargingPower
-    );
+    // The actual maximum power demand = the maximum sum of all chargepoints power demands at a given 15-minute interval
+    const actualPowerDemand = busyChargers * chargingPower;
+    actualMaxPowerDemand = Math.max(actualMaxPowerDemand, actualPowerDemand);
 
-    if (options.callback && !options.signal?.aborted) {
+    // This code provides Task 2a a callback to report realtime progress. It is NOT needed for the logic in Task 1
+    const instantResult = options.signal?.aborted; // // If instant result is requested, this function runs synchronously till the end.
+    if (options.callback && !instantResult) {
+      // This is important, to let the UI draw
+      // This also explains why this function is `async`, although it is fine being synchronous
       await new Promise((resolve) => requestAnimationFrame(resolve));
       options.callback({
         tick,
@@ -120,6 +118,7 @@ export async function simulate({
     }
   }
 
+  // The result
   return {
     theoreticalMaxPowerDemand,
     totalEnergyConsumed,

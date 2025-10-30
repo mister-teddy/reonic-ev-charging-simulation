@@ -6,22 +6,22 @@ import { useEffect } from "react";
 
 export default function Result() {
   const form = useFormContext<SimulationFormData>();
-  const [chargepoints, chargingPower, progress, result] = useWatch({
+  const [chargepointCount, chargingPower, progress, result] = useWatch({
     control: form.control,
-    name: ["chargepoints", "chargingPower", "progress", "result"],
+    name: ["chargepointCount", "chargingPower", "progress", "result"],
   });
 
   useEffect(() => {
     form.setValue("result", undefined);
-  }, [chargepoints, chargingPower]);
+  }, [chargepointCount, chargingPower]);
 
   const items = [
     [
       <Zap color="white" size={16} />,
       "Theoretical Max Power Demand",
-      chargepoints * chargingPower,
+      chargepointCount * chargingPower,
       "kW",
-      "result",
+      "result", // The status of this figure. `result` means it's from the final result, `progress` means it's from the ongoing simulation, and `n/a`.
     ],
     [
       <Activity color="white" size={16} />,

@@ -4,34 +4,36 @@ import EV from "@/components/ev";
 import type { SimulationFormData } from "@/types";
 import { useMemo } from "react";
 import { ARRIVAL_PROBABILITIES } from "@/config";
-import { timeAtTick } from "@/lib/simulate";
+import { timeAtTick } from "@/lib/utils";
 
-function ElectricIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path d="M13,9h6L8,22l3-10H5L10,2h7Z" fill="white" />
-    </svg>
-  );
-}
-
+/**
+ * During simulation, the parking lot will show which chargers are in use.
+ * During configuration (no simulation running), the parking will estimate how frequently a charger is used based on the probability table and the current hour of the day.
+ */
 export default function ParkingLot() {
   const { control } = useFormContext<SimulationFormData>();
-  const [chargepoints, arrivalProbabilityScale, progress] = useWatch({
+  const [chargepointCount, arrivalProbabilityScale, progress] = useWatch({
     control,
-    name: ["chargepoints", "arrivalProbabilityScale", "progress"],
+    name: ["chargepointCount", "arrivalProbabilityScale", "progress"],
   });
 
+  // We will dim the light at night
   const hour = progress ? timeAtTick(progress.tick)[0] : new Date().getHours();
   const isNight = hour < 6 || hour > 20;
+
   const chargers = useMemo(() => {
     if (progress) {
-      return progress.chargers;
+      // Simulation mode
+      return progress.chargers; // `progress` will change very frequently during simulation, so it's very important to return early
     }
-    const chance = ARRIVAL_PROBABILITIES[hour] * (arrivalProbabilityScale ?? 1);
-    return new Array<number>(chargepoints)
+
+    // Configuration mode
+    const scaledProbability =
+      ARRIVAL_PROBABILITIES[hour] * (arrivalProbabilityScale ?? 1);
+    return new Array<number>(chargepointCount)
       .fill(0)
-      .map(() => (Math.random() * 100 < chance ? 1 : 0));
-  }, [chargepoints, progress]);
+      .map(() => (Math.random() < scaledProbability ? 1 : 0)); // Each charger is randomly occupied based on the scaled probability
+  }, [chargepointCount, progress]);
 
   return (
     <div className="relative h-full">
@@ -73,5 +75,13 @@ export default function ParkingLot() {
         ))}
       </div>
     </div>
+  );
+}
+
+function ElectricIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M13,9h6L8,22l3-10H5L10,2h7Z" fill="white" />
+    </svg>
   );
 }

@@ -28,6 +28,8 @@ import { Label } from "@/components/ui/label";
 
 export default function Form() {
   const form = useFormContext<SimulationFormData>();
+
+  // We need to disable inputs during simulation
   const { isSubmitting } = useFormState({ control: form.control });
 
   return (
@@ -42,7 +44,7 @@ export default function Form() {
         <FieldGroup>
           <Controller
             control={form.control}
-            name="period"
+            name="periodDay"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={field.name}>
@@ -65,7 +67,7 @@ export default function Form() {
           />
           <Controller
             control={form.control}
-            name="chargepoints"
+            name="chargepointCount"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={field.name}>
@@ -179,6 +181,7 @@ export default function Form() {
                     checked={field.value}
                     onCheckedChange={field.onChange}
                     aria-invalid={fieldState.invalid}
+                    disabled={isSubmitting}
                   />
                   <Label htmlFor={field.name}>
                     Use Seed Random (deterministic results)
@@ -214,16 +217,16 @@ export default function Form() {
 
 function Summary() {
   const form = useFormContext<SimulationFormData>();
-  const [chargepoints, chargingPower, period] = useWatch({
+  const [chargepointCount, chargingPower, periodDay] = useWatch({
     control: form.control,
-    name: ["chargepoints", "chargingPower", "period"],
+    name: ["chargepointCount", "chargingPower", "periodDay"],
   });
 
   return (
     <>
-      Simulate {chargepoints} chargepoints with{" "}
-      <FormatNumber value={chargingPower} unit="kW" /> power for {period} days
-      in 15-minute intervals ({((period ?? 0) * 24 * 60) / 15} ticks).
+      Simulate {chargepointCount} chargepoints with{" "}
+      <FormatNumber value={chargingPower} unit="kW" /> power for {periodDay}{" "}
+      days in 15-minute intervals ({((periodDay ?? 0) * 24 * 60) / 15} ticks).
     </>
   );
 }

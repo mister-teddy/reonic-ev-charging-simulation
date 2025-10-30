@@ -1,17 +1,23 @@
+export interface FormatNumberProps {
+  value: number;
+  unit?: string;
+  maximumFractionDigits?: number;
+  fixedWidth?: boolean;
+}
+
+/**
+ * Display a number with thousands separators, fraction digits, and optionally fixed width so it doesn't shift layout when changing rapidly.
+ */
 export default function FormatNumber({
   value,
   unit,
   maximumFractionDigits,
   fixedWidth,
-}: {
-  value: number;
-  unit?: string;
-  maximumFractionDigits?: number;
-  fixedWidth?: boolean;
-}) {
+}: FormatNumberProps) {
   const formattedValue = value.toLocaleString(undefined, {
     maximumFractionDigits: maximumFractionDigits ?? 2,
   });
+
   return (
     <span
       style={

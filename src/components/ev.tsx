@@ -1,5 +1,8 @@
 import src from "@/assets/ev.svg";
 
+/**
+ * An EV in random color.
+ */
 export default function EV() {
   return (
     <img

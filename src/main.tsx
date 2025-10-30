@@ -8,13 +8,13 @@ import { Toaster } from "./components/ui/sonner";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {new URLSearchParams(location.search).has("logic") ? (
-      <Suspense>
+    <Suspense>
+      {new URLSearchParams(location.search).has("logic") ? (
         <Task1 />
-      </Suspense>
-    ) : (
-      <Task2a />
-    )}
-    <Toaster />
+      ) : (
+        <Task2a />
+      )}
+    </Suspense>
+    <Toaster position="bottom-center" />
   </StrictMode>
 );
