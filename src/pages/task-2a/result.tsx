@@ -61,7 +61,7 @@ export default function Result() {
           >
             {icon}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 flex flex-col justify-between">
             <div className="text-xs opacity-80">{label}</div>
             <div className="flex items-end space-x-2">
               <div className="font-bold text-xl">
